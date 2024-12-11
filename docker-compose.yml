@@ -1,0 +1,133 @@
+services:
+  saleor:
+    container_name: guug-saleor
+    image: guug-saleor
+    build:
+      context: ./saleor3
+      dockerfile: Dockerfile
+    environment:
+      - STATIC_URL=${STATIC_URL:-/static/}
+      - DEBUG=${DEBUG:-false}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
+      - STOREFRONT_URL=${STOREFRONT_URL:-http://localhost:3000}
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:8000}
+      - SECRET_KEY=${SECRET_KEY}
+      - SALEOR_ROOT_PATH=${SALEOR_ROOT_PATH}
+    expose:
+      - "8000"
+    networks:
+      - guug-network
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    profiles:
+      - backend
+      - all
+
+  dashboard:
+    container_name: guug-dashboard
+    image: guug-dashboard
+    build:
+      context: ./dashboard3
+      dockerfile: Dockerfile    
+    environment:
+      - STATIC_URL=${STATIC_URL:-/dashboard/}
+      - API_URL=${API_URL:-http://localhost:9000/graphql/}
+      - APP_MOUNT_URI=${APP_MOUNT_URI:-/dashboard/}
+    expose:
+      - "80"
+    networks:
+      - guug-network
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    profiles:
+      - backend
+      - all
+    depends_on:
+      - saleor
+
+  storefront:
+    container_name: guug-storefront
+    image: guug-storefront
+    build:
+      context: ./storefront3
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SALEOR_API_URL: ${NEXT_PUBLIC_SALEOR_API_URL}
+        NEXT_PUBLIC_STOREFRONT_URL: ${NEXT_PUBLIC_STOREFRONT_URL}
+        NEXT_FILEPRINT_URL: ${NEXT_FILEPRINT_URL}
+        NEXT_MEDIA_URL: ${NEXT_MEDIA_URL}
+    environment:
+      - NEXT_FILEPRINT_URL=${NEXT_FILEPRINT_URL}
+      - NEXT_MEDIA_URL=${NEXT_MEDIA_URL}
+    expose:
+      - "3000"
+    networks:
+      - guug-network
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    profiles:
+      - frontend
+      - all
+
+  fileprint:
+    container_name: guug-fileprint
+    image: guug-fileprint
+    build:
+      context: ./saleor-fileprint-app
+      dockerfile: Dockerfile
+      args:
+        APL_FILE_PATH: ${APL_FILE_PATH}
+        SALEOR_API_URL: ${SALEOR_API_URL}
+        DATABASE_URL: ${DATABASE_URL}
+        NEXT_MEDIA_DIR: ${NEXT_MEDIA_DIR}
+        NEXT_BASE_PATH: ${NEXT_BASE_PATH}
+        NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
+        APP_API_BASE_URL: ${APP_API_BASE_URL}
+        APP_IFRAME_BASE_URL: ${APP_IFRAME_BASE_URL}
+    environment:
+      SALEOR_API_URL: ${SALEOR_API_URL}
+      NEXT_MEDIA_DIR: ${NEXT_MEDIA_DIR}
+      NEXT_BASE_PATH: ${NEXT_BASE_PATH}
+      NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
+      APP_API_BASE_URL: ${APP_API_BASE_URL}
+      APP_IFRAME_BASE_URL: ${APP_IFRAME_BASE_URL}
+    expose:
+      - "3000"
+    networks:
+      - guug-network
+    volumes:
+      - static:/app/static
+      - media:/app/media
+      - apl:/app/apl
+    profiles:
+      - frontend
+      - all
+
+  nginx:
+    container_name: guug-nginx
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - guug-network
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static:/app/static
+      - media:/app/media
+    profiles:
+      - backend
+      - all
+    depends_on:
+      - saleor
+
+volumes:
+  static:
+  media:
+  apl:
+
+networks:
+  guug-network:
