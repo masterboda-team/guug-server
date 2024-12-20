@@ -13,6 +13,8 @@ services:
       - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:8000}
       - SECRET_KEY=${SECRET_KEY}
       - SALEOR_ROOT_PATH=${SALEOR_ROOT_PATH}
+      - ENABLE_SSL=${ENABLE_SSL}
+      - ALLOWED_CLIENT_HOSTS=${ALLOWED_CLIENT_HOSTS}
     expose:
       - "8000"
     networks:
@@ -111,7 +113,7 @@ services:
     image: nginx:latest
     restart: always
     ports:
-      - "80:80"
+      - "9000:80"
     networks:
       - guug-network
     volumes:
