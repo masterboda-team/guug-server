@@ -6,15 +6,15 @@ services:
       context: ./saleor3
       dockerfile: Dockerfile
     environment:
-      - STATIC_URL=${STATIC_URL:-/static/}
-      - DEBUG=${DEBUG:-false}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
-      - STOREFRONT_URL=${STOREFRONT_URL:-http://localhost:3000}
-      - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:8000}
-      - SECRET_KEY=${SECRET_KEY}
+      - STATIC_URL=${SALEOR_STATIC_URL:-/static/}
+      - DEBUG=${SALEOR_DEBUG:-false}
+      - ALLOWED_HOSTS=${SALEOR_ALLOWED_HOSTS:-localhost}
+      - STOREFRONT_URL=${SALEOR_STOREFRONT_URL:-http://localhost:3000}
+      - DASHBOARD_URL=${SALEOR_DASHBOARD_URL:-http://localhost:8000}
+      - SECRET_KEY=${SALEOR_SECRET_KEY}
       - SALEOR_ROOT_PATH=${SALEOR_ROOT_PATH}
-      - ENABLE_SSL=${ENABLE_SSL}
-      - ALLOWED_CLIENT_HOSTS=${ALLOWED_CLIENT_HOSTS}
+      - ENABLE_SSL=${SALEOR_ENABLE_SSL}
+      - ALLOWED_CLIENT_HOSTS=${SALEOR_ALLOWED_CLIENT_HOSTS}
     expose:
       - "8000"
     networks:
@@ -33,9 +33,9 @@ services:
       context: ./dashboard3
       dockerfile: Dockerfile    
     environment:
-      - STATIC_URL=${STATIC_URL:-/dashboard/}
-      - API_URL=${API_URL:-http://localhost:9000/graphql/}
-      - APP_MOUNT_URI=${APP_MOUNT_URI:-/dashboard/}
+      - STATIC_URL=${DASHBOARD_STATIC_URL:-/dashboard/}
+      - API_URL=${DASHBOARD_API_URL:-http://localhost:9000/graphql/}
+      - APP_MOUNT_URI=${DASHBOARD_APP_MOUNT_URI:-/dashboard/}
     expose:
       - "80"
     networks:
@@ -44,10 +44,8 @@ services:
       - static:/app/static
       - media:/app/media
     profiles:
-      - backend
+      - frontend
       - all
-    depends_on:
-      - saleor
 
   storefront:
     container_name: guug-storefront
@@ -56,13 +54,13 @@ services:
       context: ./storefront3
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_SALEOR_API_URL: ${NEXT_PUBLIC_SALEOR_API_URL}
-        NEXT_PUBLIC_STOREFRONT_URL: ${NEXT_PUBLIC_STOREFRONT_URL}
-        NEXT_FILEPRINT_URL: ${NEXT_FILEPRINT_URL}
-        NEXT_MEDIA_URL: ${NEXT_MEDIA_URL}
+        NEXT_PUBLIC_SALEOR_API_URL: ${STOREFRONT_NEXT_PUBLIC_SALEOR_API_URL}
+        NEXT_PUBLIC_STOREFRONT_URL: ${STOREFRONT_NEXT_PUBLIC_STOREFRONT_URL}
+        NEXT_FILEPRINT_URL: ${STOREFRONT_NEXT_FILEPRINT_URL}
+        NEXT_MEDIA_URL: ${STOREFRONT_NEXT_MEDIA_URL}
     environment:
-      - NEXT_FILEPRINT_URL=${NEXT_FILEPRINT_URL}
-      - NEXT_MEDIA_URL=${NEXT_MEDIA_URL}
+      - NEXT_FILEPRINT_URL=${STOREFRONT_NEXT_FILEPRINT_URL}
+      - NEXT_MEDIA_URL=${STOREFRONT_NEXT_MEDIA_URL}
     expose:
       - "3000"
     networks:
@@ -81,21 +79,21 @@ services:
       context: ./saleor-fileprint-app
       dockerfile: Dockerfile
       args:
-        APL_FILE_PATH: ${APL_FILE_PATH}
-        SALEOR_API_URL: ${SALEOR_API_URL}
-        DATABASE_URL: ${DATABASE_URL}
-        NEXT_MEDIA_DIR: ${NEXT_MEDIA_DIR}
-        NEXT_BASE_PATH: ${NEXT_BASE_PATH}
-        NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
-        APP_API_BASE_URL: ${APP_API_BASE_URL}
-        APP_IFRAME_BASE_URL: ${APP_IFRAME_BASE_URL}
+        APL_FILE_PATH: ${FILEPRINT_APL_FILE_PATH}
+        SALEOR_API_URL: ${FILEPRINT_SALEOR_API_URL}
+        DATABASE_URL: ${FILEPRINT_DATABASE_URL}
+        NEXT_MEDIA_DIR: ${FILEPRINT_NEXT_MEDIA_DIR}
+        NEXT_BASE_PATH: ${FILEPRINT_NEXT_BASE_PATH}
+        NEXT_PUBLIC_URL: ${FILEPRINT_NEXT_PUBLIC_URL}
+        APP_API_BASE_URL: ${FILEPRINT_APP_API_BASE_URL}
+        APP_IFRAME_BASE_URL: ${FILEPRINT_APP_IFRAME_BASE_URL}
     environment:
-      SALEOR_API_URL: ${SALEOR_API_URL}
-      NEXT_MEDIA_DIR: ${NEXT_MEDIA_DIR}
-      NEXT_BASE_PATH: ${NEXT_BASE_PATH}
-      NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
-      APP_API_BASE_URL: ${APP_API_BASE_URL}
-      APP_IFRAME_BASE_URL: ${APP_IFRAME_BASE_URL}
+      SALEOR_API_URL: ${FILEPRINT_SALEOR_API_URL}
+      NEXT_MEDIA_DIR: ${FILEPRINT_NEXT_MEDIA_DIR}
+      NEXT_BASE_PATH: ${FILEPRINT_NEXT_BASE_PATH}
+      NEXT_PUBLIC_URL: ${FILEPRINT_NEXT_PUBLIC_URL}
+      APP_API_BASE_URL: ${FILEPRINT_APP_API_BASE_URL}
+      APP_IFRAME_BASE_URL: ${FILEPRINT_APP_IFRAME_BASE_URL}
     expose:
       - "3000"
     networks:
@@ -105,7 +103,33 @@ services:
       - media:/app/media
       - apl:/app/apl
     profiles:
-      - frontend
+      - apps
+      - all
+
+  dummy-payment:
+    container_name: guug-dummy-payment
+    image: guug-dummy-payment
+    build:
+      context: ./dummy-payment-app
+      dockerfile: Dockerfile
+      args:
+        APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
+        APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
+        FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
+        NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
+    environment:
+      APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
+      APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
+      FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
+      NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
+    expose:
+      - "3000"
+    networks:
+      - guug-network
+    volumes:
+      - apl:/app/apl
+    profiles:
+      - apps
       - all
 
   nginx:
@@ -113,7 +137,7 @@ services:
     image: nginx:latest
     restart: always
     ports:
-      - "9000:80"
+      - "80:80"
     networks:
       - guug-network
     volumes:
