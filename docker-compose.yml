@@ -15,6 +15,7 @@ services:
       - SALEOR_ROOT_PATH=${SALEOR_ROOT_PATH}
       - ENABLE_SSL=${SALEOR_ENABLE_SSL}
       - ALLOWED_CLIENT_HOSTS=${SALEOR_ALLOWED_CLIENT_HOSTS}
+      - EMAIL_URL=${SALEOR_EMAIL_URL}
     expose:
       - "8000"
     networks:
