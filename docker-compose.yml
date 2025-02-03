@@ -44,7 +44,7 @@ services:
       - static:/app/static
       - media:/app/media
     profiles:
-      - frontend
+      - backend
       - all
 
   storefront:
