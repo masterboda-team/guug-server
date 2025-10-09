@@ -1,10 +1,10 @@
 services:
   saleor:
-    container_name: guug-saleor
-    image: guug-saleor
+    container_name: guug-saleor-dev
+    image: guug-saleor-dev
     build:
       context: ./saleor3
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     environment:
       STATIC_URL: ${SALEOR_STATIC_URL:-/static/}
       DEBUG: ${DEBUG:-false}
@@ -30,8 +30,8 @@ services:
       - all
 
   dashboard:
-    container_name: guug-dashboard
-    image: guug-dashboard
+    container_name: guug-dashboard-dev
+    image: guug-dashboard-dev
     build:
       context: ./dashboard3
       dockerfile: Dockerfile    
@@ -53,11 +53,11 @@ services:
       - all
 
   storefront:
-    container_name: guug-storefront
-    image: guug-storefront
+    container_name: guug-storefront-dev
+    image: guug-storefront-dev
     build:
       context: ./storefront3
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         NEXT_PUBLIC_SALEOR_API_URL: ${SALEOR_API_URL}
         NEXT_PUBLIC_STOREFRONT_URL: ${STOREFRONT_NEXT_PUBLIC_STOREFRONT_URL}
@@ -72,6 +72,8 @@ services:
       APP_LOG_LEVEL: ${LOG_LEVEL}
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-1}
       SALEOR_APP_TOKEN: ${STOREFRONT_SALEOR_APP_TOKEN}
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
     expose:
       - "3000"
     networks:
@@ -79,13 +81,15 @@ services:
     volumes:
       - static:/app/static
       - media:/app/media
+      - ./storefront3:/app
+      - /app/node_modules
     profiles:
       - frontend
       - all
 
   fileprint:
-    container_name: guug-fileprint
-    image: guug-fileprint
+    container_name: guug-fileprint-dev
+    image: guug-fileprint-dev
     build:
       context: ./saleor-fileprint-app
       dockerfile: Dockerfile
@@ -123,8 +127,8 @@ services:
       - all
 
   dummy-payment:
-    container_name: guug-dummy-payment
-    image: guug-dummy-payment
+    container_name: guug-dummy-payment-dev
+    image: guug-dummy-payment-dev
     build:
       context: ./dummy-payment-app
       dockerfile: Dockerfile
@@ -151,8 +155,8 @@ services:
       - all
   
   stripe-payment:
-    container_name: guug-stripe-payment
-    image: guug-stripe-payment
+    container_name: guug-stripe-payment-dev
+    image: guug-stripe-payment-dev
     build:
       context: ./apps
       dockerfile: .devcontainer/stripe/Dockerfile
@@ -170,18 +174,23 @@ services:
         NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-1}
     environment:
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-1}
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
     expose:
       - "3000"
     networks:
       - guug-network
     volumes:
       - apl:/app/apl
+      - ./apps:/app
+      - /app/node_modules
+      - /app/apps/stripe/node_modules
     profiles:
       - apps
       - all
 
   nginx:
-    container_name: guug-nginx
+    container_name: guug-nginx-dev
     image: nginx:latest
     environment:
       - NGINX_HOST=${NGINX_HOST:-localhost}
@@ -194,8 +203,8 @@ services:
       - guug-network
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/cert.pem:/etc/nginx/cert.pem:ro
-      - ./nginx/cert-key.pem:/etc/nginx/cert-key.pem:ro
+      - ./cert.pem:/etc/nginx/cert.pem:ro
+      - ./cert-key.pem:/etc/nginx/cert-key.pem:ro
       - static:/app/static
       - media:/app/media
     profiles:
@@ -205,6 +214,7 @@ services:
       - saleor
 
   dynamodb:
+    container_name: guug-dynamodb-dev
     image: "amazon/dynamodb-local:latest"
     ports:
       - 8000:8000

@@ -3,4 +3,8 @@ saleor3/
 storefront3/
 saleor-fileprint-app/
 dummy-payment-app/
+apps/
 .env
+cert.pem
+cert-key.pem
+rootCA.pem
