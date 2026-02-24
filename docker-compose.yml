@@ -18,6 +18,9 @@ services:
       HTTP_IP_FILTER_ENABLED: ${SALEOR_HTTP_IP_FILTER_ENABLED}
       EMAIL_URL: ${SALEOR_EMAIL_URL}
       APP_LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${SALEOR_DATABASE_URL}
+      RSA_PRIVATE_KEY: ${SALEOR_RSA_PRIVATE_KEY}
+      PUBLIC_URL: ${SALEOR_PUBLIC_URL}
     expose:
       - "8000"
     networks:
@@ -188,8 +191,8 @@ services:
       - NGINX_PORT=${NGINX_PORT:-80}
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     networks:
       - guug-network
     volumes:

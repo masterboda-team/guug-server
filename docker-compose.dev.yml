@@ -18,6 +18,9 @@ services:
       HTTP_IP_FILTER_ENABLED: ${SALEOR_HTTP_IP_FILTER_ENABLED}
       EMAIL_URL: ${SALEOR_EMAIL_URL}
       APP_LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${SALEOR_DATABASE_URL}
+      RSA_PRIVATE_KEY: ${SALEOR_RSA_PRIVATE_KEY}
+      PUBLIC_URL: ${SALEOR_PUBLIC_URL}
     expose:
       - "8000"
     networks:
@@ -34,7 +37,7 @@ services:
     image: guug-dashboard-dev
     build:
       context: ./dashboard3
-      dockerfile: Dockerfile    
+      dockerfile: Dockerfile
     environment:
       STATIC_URL: ${DASHBOARD_STATIC_URL:-/dashboard/}
       API_URL: ${DASHBOARD_API_URL:-http://localhost:9000/graphql/}
@@ -92,7 +95,7 @@ services:
     image: guug-fileprint-dev
     build:
       context: ./saleor-fileprint-app
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         APL_FILE_PATH: ${FILEPRINT_APL_FILE_PATH}
         SALEOR_API_URL: ${SALEOR_API_URL}
