@@ -24,7 +24,7 @@ services:
     expose:
       - "8000"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
       - static:/app/static
       - media:/app/media
@@ -46,12 +46,11 @@ services:
     expose:
       - "80"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
       - static:/app/static
       - media:/app/media
     profiles:
-      - dashboard
       - frontend
       - all
 
@@ -80,7 +79,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
       - static:/app/static
       - media:/app/media
@@ -120,7 +119,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
       - static:/app/static
       - media:/app/media
@@ -129,33 +128,34 @@ services:
       - apps
       - all
 
-  dummy-payment:
-    container_name: guug-dummy-payment-dev
-    image: guug-dummy-payment-dev
-    build:
-      context: ./dummy-payment-app
-      dockerfile: Dockerfile
-      args:
-        APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
-        APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
-        FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
-        NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
-        APP_LOG_LEVEL: ${LOG_LEVEL}
-    environment:
-      APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
-      APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
-      FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
-      NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
-      APP_LOG_LEVEL: ${LOG_LEVEL}
-    expose:
-      - "3000"
-    networks:
-      - guug-network
-    volumes:
-      - apl:/app/apl
-    profiles:
-      - apps
-      - all
+  ## This service is deprecated. Stripe payment app can be use for dummy payment.
+  # dummy-payment:
+  #   container_name: guug-dummy-payment-dev
+  #   image: guug-dummy-payment-dev
+  #   build:
+  #     context: ./dummy-payment-app
+  #     dockerfile: Dockerfile
+  #     args:
+  #       APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
+  #       APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
+  #       FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
+  #       NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
+  #       APP_LOG_LEVEL: ${LOG_LEVEL}
+  #   environment:
+  #     APP_API_BASE_URL: ${DUMMY_PAYMENT_APP_API_BASE_URL}
+  #     APP_IFRAME_BASE_URL: ${DUMMY_PAYMENT_APP_IFRAME_BASE_URL}
+  #     FILE_APL_PATH: ${DUMMY_PAYMENT_FILE_APL_PATH}
+  #     NEXT_BASE_PATH: ${DUMMY_PAYMENT_NEXT_BASE_PATH}
+  #     APP_LOG_LEVEL: ${LOG_LEVEL}
+  #   expose:
+  #     - "3000"
+  #   networks:
+  #     - guug-network-dev
+  #   volumes:
+  #     - apl:/app/apl
+  #   profiles:
+  #     - apps
+  #     - all
   
   stripe-payment:
     container_name: guug-stripe-payment-dev
@@ -182,7 +182,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
       - apl:/app/apl
       - ./apps:/app
@@ -200,14 +200,14 @@ services:
       - NGINX_PORT=${NGINX_PORT:-80}
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "8082:80"
+      # - "443:443"
     networks:
-      - guug-network
+      - guug-network-dev
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./cert.pem:/etc/nginx/cert.pem:ro
-      - ./cert-key.pem:/etc/nginx/cert-key.pem:ro
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      # - ./cert.pem:/etc/nginx/cert.pem:ro
+      # - ./cert-key.pem:/etc/nginx/cert-key.pem:ro
       - static:/app/static
       - media:/app/media
     profiles:
@@ -219,24 +219,28 @@ services:
   dynamodb:
     container_name: guug-dynamodb-dev
     image: "amazon/dynamodb-local:latest"
-    ports:
-      - 8000:8000
+    expose:
+      - "3000"
     volumes:
       - "dynamodb-data:/home/dynamodblocal/data"
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
     user: root
     networks:
-      - guug-network
+      - guug-network-dev
     profiles:
       - backend
       - all
 
 volumes:
   static:
+    name: guug-static-dev
   media:
+    name: guug-media-dev
   apl:
+    name: guug-apl-dev
   dynamodb-data:
+    name: guug-dynamodb-data-dev
     driver: local
 
 networks:
-  guug-network:
+  guug-network-dev:

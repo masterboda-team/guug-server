@@ -1,7 +1,7 @@
 services:
   saleor:
-    container_name: guug-saleor-live
-    image: guug-saleor-live
+    container_name: guug-saleor-staging
+    image: guug-saleor-staging
     build:
       context: ./saleor3
       dockerfile: Dockerfile
@@ -24,7 +24,7 @@ services:
     expose:
       - "8000"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
       - static:/app/static
       - media:/app/media
@@ -33,8 +33,8 @@ services:
       - all
 
   dashboard:
-    container_name: guug-dashboard-live
-    image: guug-dashboard-live
+    container_name: guug-dashboard-staging
+    image: guug-dashboard-staging
     build:
       context: ./dashboard3
       dockerfile: Dockerfile    
@@ -46,7 +46,7 @@ services:
     expose:
       - "80"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
       - static:/app/static
       - media:/app/media
@@ -55,8 +55,8 @@ services:
       - all
 
   storefront:
-    container_name: guug-storefront-live
-    image: guug-storefront-live
+    container_name: guug-storefront-staging
+    image: guug-storefront-staging
     build:
       context: ./storefront3
       dockerfile: Dockerfile
@@ -77,7 +77,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
       - static:/app/static
       - media:/app/media
@@ -86,8 +86,8 @@ services:
       - all
 
   fileprint:
-    container_name: guug-fileprint-live
-    image: guug-fileprint-live
+    container_name: guug-fileprint-staging
+    image: guug-fileprint-staging
     build:
       context: ./saleor-fileprint-app
       dockerfile: Dockerfile
@@ -115,7 +115,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
       - static:/app/static
       - media:/app/media
@@ -126,8 +126,8 @@ services:
 
   ## This service is deprecated. Stripe payment app can be use for dummy payment.
   # dummy-payment:
-  #   container_name: guug-dummy-payment-live
-  #   image: guug-dummy-payment-live
+  #   container_name: guug-dummy-payment-staging
+  #   image: guug-dummy-payment-staging
   #   build:
   #     context: ./dummy-payment-app
   #     dockerfile: Dockerfile
@@ -146,7 +146,7 @@ services:
   #   expose:
   #     - "3000"
   #   networks:
-  #     - guug-network-live
+  #     - guug-network-staging
   #   volumes:
   #     - apl:/app/apl
   #   profiles:
@@ -154,8 +154,8 @@ services:
   #     - all
   
   stripe-payment:
-    container_name: guug-stripe-payment-live
-    image: guug-stripe-payment-live
+    container_name: guug-stripe-payment-staging
+    image: guug-stripe-payment-staging
     build:
       context: ./apps
       dockerfile: .prodcontainer/stripe/Dockerfile
@@ -176,7 +176,7 @@ services:
     expose:
       - "3000"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
       - apl:/app/apl
     profiles:
@@ -184,21 +184,21 @@ services:
       - all
 
   nginx:
-    container_name: guug-nginx-live
+    container_name: guug-nginx-staging
     image: nginx:latest
     environment:
       - NGINX_HOST=${NGINX_HOST:-localhost}
       - NGINX_PORT=${NGINX_PORT:-80}
     restart: always
     ports:
-      - "8080:80"
+      - "8081:80"
       # - "8443:443"
     networks:
-      - guug-network-live
+      - guug-network-staging
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # - ./nginx/cert.pem:/etc/nginx/cert.pem:ro
-      # - ./nginx/cert-key.pem:/etc/nginx/cert-key.pem:ro
+      - ./nginx/nginx-staging.conf:/etc/nginx/nginx.conf:ro
+      # - /etc/letsencrypt/live/shop.guug.it/fullchain.pem:/etc/nginx/cert.pem:ro
+      # - /etc/letsencrypt/live/shop.guug.it/privkey.pem:/etc/nginx/cert-key.pem:ro
       - static:/app/static
       - media:/app/media
     profiles:
@@ -208,30 +208,30 @@ services:
       - saleor
 
   dynamodb:
-    container_name: guug-dynamodb-live
+    container_name: guug-dynamodb-staging
     image: "amazon/dynamodb-local:latest"
     expose:
-      - "8000"
+      - "3000"
     volumes:
       - "dynamodb-data:/home/dynamodblocal/data"
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
     user: root
     networks:
-      - guug-network-live
+      - guug-network-staging
     profiles:
       - backend
       - all
 
 volumes:
   static:
-    name: guug-static-live
+    name: guug-static-staging
   media:
-    name: guug-media-live
+    name: guug-media-staging
   apl:
-    name: guug-apl-live
+    name: guug-apl-staging
   dynamodb-data:
-    name: guug-dynamodb-data-live
+    name: guug-dynamodb-data-staging
     driver: local
 
 networks:
-  guug-network-live:
+  guug-network-staging:

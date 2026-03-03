@@ -10,7 +10,7 @@ else
 fi
 
 # Define Saleor URL to check (using the environment variable from .env)
-SALEOR_URL="${SALEOR_URL:-http://localhost:8000/graphql/}" 
+SALEOR_PUBLIC_URL="${SALEOR_PUBLIC_URL:-http://localhost:8000/graphql/}"
 
 # Function to wait for Saleor to respond
 wait_for_saleor() {

@@ -4,7 +4,7 @@ storefront3/
 saleor-fileprint-app/
 dummy-payment-app/
 apps/
-.env
+.env*
 cert.pem
 cert-key.pem
 rootCA.pem
